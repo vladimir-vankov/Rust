@@ -1,5 +1,8 @@
+use regex::Error;
 use text_colorizer::*;
 use std::env;
+use std::fs;
+// use std::process;
 
 ///set to derive from Debug to add additional code for easier printing
 #[derive(Debug)]
@@ -13,6 +16,21 @@ struct Arguments {
 fn main() {
     let args = parse_args();
     println!("{:?}",args);
+    let data = match fs::read_to_string(&args.filename) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{} failed to read from file '{}' : {:?}", "Error".red().bold(), args.filename, e);
+            std::process::exit(1);
+        }
+    };
+
+    match fs::write(&args.output, &data) {
+        Ok(_) => {},
+        Err(e) => {
+            eprintln!("{} fail to write in file '{}' : {:?}", "Error".red().bold(), args.filename, e);
+            std::process::exit(1);
+        }
+    }
 }
 
 fn print_usage() {
