@@ -32,5 +32,8 @@ pub fn validate_symbol(symbol: &String) -> bool{
         is_valid = false;
         println!("Symbol must be one letter X/O");
     }
+    else if symbol.chars().next().unwrap() != 'X' && symbol.chars().next().unwrap() != 'O' {
+        is_valid = false;
+    }
     is_valid
 }
