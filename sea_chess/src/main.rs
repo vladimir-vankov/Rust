@@ -37,6 +37,13 @@ fn main() {
     
     let game_board = Board::new();
     game_board.print_board();
+    // while !game_board.is_game_end(){
+    if !game_board.is_game_end(){
+        for player in &players{
+            println!("Player {} turn:", player.get_name());
+        }
+    }
+    // }
     println!("Print All Players");
     for player in &players{
         player.print_player_info();

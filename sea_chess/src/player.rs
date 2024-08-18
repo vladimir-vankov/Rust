@@ -13,6 +13,11 @@ impl Player {
     pub fn print_player_info(self: &Player){
         println!("Player Name : {} \nPlayer Symbol : {}", self.name, self.symbol);
     }
+
+
+    pub fn get_name(self: &Player) -> &String {
+        &self.name
+    }
 }
 
 pub fn validate_name(name: &String) -> bool{
