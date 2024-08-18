@@ -22,23 +22,26 @@ impl Board {
 
     pub fn print_board(self: &Board){
         for i in 0..4 { 
-            for _ in 0..10{
+            for _ in 0..13{
                 print!("-");
             }
             println!("");
-            for x in 0..12{
-                if x % 3 == 0{
-                    print!("|");
+            if i < 3{
+                let mut col = 0;
+                for x in 0..16{
+                    if x % 4 == 0{
+                        print!("|");
+                    }
+                    else {
+                        if x % 2 == 0 && x < 14{
+                            print!("{}",self.desk[i][col]);
+                            col+=1;
+                        }
+                        else {
+                            print!(" ");
+                        }
+                    }
                 }
-                else {
-                    print!(" ");
-                }            
-            }
-        }
-        println!("");
-        for row in self.desk {
-            for col in row{
-                print!("{} ", col);
             }
             println!("");
         }
