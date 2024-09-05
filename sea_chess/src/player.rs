@@ -1,12 +1,19 @@
+use crate::utils::Point;
+
 pub struct Player {
     name : String,
-    symbol : char
+    symbol : char,
+    turn : Point 
 }
 
 impl Player {
     // Define the `new` function
     pub fn new(name: String, symbol: char) -> Player {
-        Player { name, symbol }
+        Player { 
+            name : name, 
+            symbol : symbol,
+            turn : Point::new(0, 0)
+        }
     }
 
     // self must be not mutable reference to Player. So it won't take the ownership.
@@ -17,6 +24,10 @@ impl Player {
 
     pub fn get_name(self: &Player) -> &String {
         &self.name
+    }
+
+    pub fn set_player_turn(mut self, player_turn: Point){
+        self.turn = player_turn;
     }
 }
 
