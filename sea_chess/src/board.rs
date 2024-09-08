@@ -1,7 +1,7 @@
 // use std::cell::Cell;
 
 use crate::player::Player;
-
+use crate::utils::Point;
 // use std::cell::RefCell;
 pub struct Board<'a> {
     //we use RefCell so desk to be mutable
@@ -62,4 +62,8 @@ impl<'a> Board<'a> {
     pub fn get_current_player(& self) -> &Player{
         &self.current_player
     }
+    pub fn play_turn(&mut self, current_turn: Point){
+        self.desk[current_turn.x as usize][current_turn.y as usize] = self.current_player.get_symbol();
+    }
+        
 }

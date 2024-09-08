@@ -46,7 +46,7 @@ fn main() {
         let current_player_name: &String = game_board.get_current_player().get_name();
         println!("{} please enter position 'x' :", current_player_name);
         io::stdin().read_line(&mut current_input).expect("Problem when reading symbol from console!");
-        let current_turn = Point::new(0, 0);
+        let mut current_turn = Point::new(0, 0);
         let parsed_input: Result<u8, _> = current_input.trim().parse::<u8>();
         match  parsed_input {
             Ok(value) => current_turn.set_x(value),
@@ -62,7 +62,7 @@ fn main() {
             Err(e) => println!("Failed to parse: {}", e),
         }
         current_input.clear();
-
+        // println!("Current player turn is : ({}, {})", current_turn.x, current_turn.y);
         player_counter += 1;
         if player_counter == players.len(){
             player_counter = 0;

@@ -26,6 +26,10 @@ impl Player {
         &self.name
     }
 
+    pub fn get_symbol(self: &Player) -> char {
+        self.symbol.clone()
+    }
+
     pub fn set_player_turn(mut self, player_turn: Point){
         self.turn = player_turn;
     }
