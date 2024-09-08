@@ -63,7 +63,7 @@ impl<'a> Board<'a> {
         &self.current_player
     }
     pub fn play_turn(&mut self, current_turn: Point){
-        self.desk[current_turn.x as usize][current_turn.y as usize] = self.current_player.get_symbol();
+        self.desk[current_turn.y as usize][current_turn.x as usize] = self.current_player.get_symbol();
     }
         
 }

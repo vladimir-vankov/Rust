@@ -1,9 +1,7 @@
-use crate::utils::Point;
 
 pub struct Player {
     name : String,
     symbol : char,
-    turn : Point 
 }
 
 impl Player {
@@ -12,7 +10,6 @@ impl Player {
         Player { 
             name : name, 
             symbol : symbol,
-            turn : Point::new(0, 0)
         }
     }
 
@@ -30,9 +27,6 @@ impl Player {
         self.symbol.clone()
     }
 
-    pub fn set_player_turn(mut self, player_turn: Point){
-        self.turn = player_turn;
-    }
 }
 
 pub fn validate_name(name: &String) -> bool{

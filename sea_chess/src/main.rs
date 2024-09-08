@@ -41,28 +41,14 @@ fn main() {
     let mut player_counter: usize = 0;
     let mut game_board: Board = Board::new(&players[player_counter]);
     while !game_board.is_game_end(){
-        let mut current_input = String::new();
         game_board.print_board();
-        let current_player_name: &String = game_board.get_current_player().get_name();
-        println!("{} please enter position 'x' :", current_player_name);
-        io::stdin().read_line(&mut current_input).expect("Problem when reading symbol from console!");
+        
         let mut current_turn = Point::new(0, 0);
-        let parsed_input: Result<u8, _> = current_input.trim().parse::<u8>();
-        match  parsed_input {
-            Ok(value) => current_turn.set_x(value),
-            Err(e) => println!("Failed to parse: {}", e),
-        }
-        current_input.clear();
 
-        println!("{} please enter position 'y' :", current_player_name);
-        io::stdin().read_line(&mut current_input).expect("Problem when reading symbol from console!");
-        let parsed_input: Result<u8, _> = current_input.trim().parse::<u8>();
-        match  parsed_input {
-            Ok(value) => current_turn.set_y(value),
-            Err(e) => println!("Failed to parse: {}", e),
-        }
-        current_input.clear();
-        // println!("Current player turn is : ({}, {})", current_turn.x, current_turn.y);
+        get_coordinate(game_board.get_current_player().get_name(), "x".to_string(), &mut current_turn);
+        get_coordinate(game_board.get_current_player().get_name(), "y".to_string(), &mut current_turn);
+        
+        game_board.play_turn(current_turn);
         player_counter += 1;
         if player_counter == players.len(){
             player_counter = 0;
@@ -73,4 +59,21 @@ fn main() {
     for player in &players{
         player.print_player_info();
     }
+}
+
+fn get_coordinate(player_name :&String, axis: String, current_turn: &mut Point ){
+    let mut current_input = String::new();
+    println!("{} please enter position '{}' :", player_name, axis.to_lowercase());
+    io::stdin().read_line(&mut current_input).expect("Problem when reading symbol from console!");
+    let parsed_input: Result<u8, _> = current_input.trim().parse::<u8>();
+    match  parsed_input {
+        Ok(value) => if axis == "y" {
+            current_turn.set_y(value);
+        }
+        else if axis == "x"{
+            current_turn.set_x(value);
+        }
+        Err(e) => println!("Failed to parse: {}", e),
+    }
+    current_input.clear();
 }
