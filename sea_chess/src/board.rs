@@ -1,11 +1,7 @@
-// use std::cell::Cell;
-
 use crate::player::Player;
 use crate::utils::Point;
-// use std::cell::RefCell;
 pub struct Board<'a> {
-    //we use RefCell so desk to be mutable
-    desk : [[char; 3]; 3],//RefCell<[[char; 3]; 3]>,
+    desk : [[char; 3]; 3],
     game_end : bool,
     current_player: &'a Player
 }
@@ -13,9 +9,6 @@ pub struct Board<'a> {
 impl<'a> Board<'a> {
     pub fn new(current_player: &'a Player) -> Board{
         Board {
-            // desk : RefCell::new([['*', '*', '*'],
-            //                     ['*', '*', '*'],
-            //                     ['*', '*', '*']])
             desk : [['*', '*', '*'],
                     ['*', '*', '*'],
                     ['*', '*', '*']],
@@ -63,7 +56,7 @@ impl<'a> Board<'a> {
         &self.current_player
     }
     pub fn play_turn(&mut self, current_turn: Point){
-        self.desk[current_turn.y as usize][current_turn.x as usize] = self.current_player.get_symbol();
+        self.desk[current_turn.get_y() as usize][current_turn.get_x() as usize] = self.current_player.get_symbol();
     }
         
 }

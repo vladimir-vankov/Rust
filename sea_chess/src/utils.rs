@@ -1,6 +1,6 @@
 pub struct Point{
-    pub x:u8,
-    pub y:u8
+    x:u8,
+    y:u8
 } 
 
 impl Point{
@@ -14,5 +14,13 @@ impl Point{
 
     pub fn set_y(&mut self, _y: u8){
         self.y = _y;
+    }
+
+    pub fn get_x(&self) -> u8{
+        self.x 
+    }
+
+    pub fn get_y(&self) -> u8{
+        self.y 
     }
 }
