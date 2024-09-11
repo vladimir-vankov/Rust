@@ -55,8 +55,18 @@ impl<'a> Board<'a> {
     pub fn get_current_player(& self) -> &Player{
         &self.current_player
     }
-    pub fn play_turn(&mut self, current_turn: Point){
-        self.desk[current_turn.get_y() as usize][current_turn.get_x() as usize] = self.current_player.get_symbol();
+    pub fn play_turn(&mut self, current_turn: Point) -> bool{
+        if self.desk[current_turn.get_y() as usize][current_turn.get_x() as usize] == '*'{
+            self.desk[current_turn.get_y() as usize][current_turn.get_x() as usize] = self.current_player.get_symbol();
+            return true;
+        }
+        else{
+            return  false;
+        }
+    }
+
+    pub fn check_for_win(& self){
+        
     }
         
 }

@@ -51,3 +51,21 @@ pub fn validate_symbol(symbol: &String) -> bool{
     }
     is_valid
 }
+
+#[test]
+fn test_symbol(){
+    assert_eq!(validate_symbol(&"X".to_string()), true);
+    assert_eq!(validate_symbol(&"x".to_string()), false);
+    assert_eq!(validate_symbol(&"O".to_string()), true);
+    assert_eq!(validate_symbol(&"o".to_string()), false);
+    assert_eq!(validate_symbol(&"".to_string()), false);
+    for letter in String::from("abcdefghijklmopqrstuvwxyz").chars(){
+        assert_eq!(validate_symbol(&letter.to_string()), false);
+    }
+}
+#[test]
+fn test_name(){
+    assert_eq!(validate_name(&"Vladimir".to_string()), true);
+    assert_eq!(validate_name(&"x".to_string()), true);
+    assert_eq!(validate_name(&"".to_string()), false);
+}

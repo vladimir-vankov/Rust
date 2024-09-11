@@ -48,7 +48,12 @@ fn main() {
         get_coordinate(game_board.get_current_player().get_name(), "x".to_string(), &mut current_turn);
         get_coordinate(game_board.get_current_player().get_name(), "y".to_string(), &mut current_turn);
         
-        game_board.play_turn(current_turn);
+        if !game_board.play_turn(current_turn){
+            println!("####################################################################");
+            println!("# Please select free position.(Free positions are marked with '*') #");
+            println!("####################################################################");
+            continue;
+        }
         player_counter += 1;
         if player_counter == players.len(){
             player_counter = 0;
