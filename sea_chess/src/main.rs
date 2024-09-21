@@ -54,6 +54,11 @@ fn main() {
             println!("####################################################################");
             continue;
         }
+        if game_board.check_for_win(){
+            game_board.print_board();
+            println!("Congratulation {}, you win!!!", game_board.get_current_player().get_name());
+            break;
+        }
         player_counter += 1;
         if player_counter == players.len(){
             player_counter = 0;
