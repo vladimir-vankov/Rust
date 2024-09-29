@@ -71,8 +71,8 @@ impl<'a> Board<'a> {
 
     pub fn check_for_win(& self) -> bool{
         let mut is_win: bool = false;
+        let symbol_conteiner:&char = &self.current_player.get_symbol();
         for row in 0..3{
-            let symbol_conteiner:&char = &self.current_player.get_symbol();
             let mut counter_row: u16 = 0;
             let mut counter_col: u16 = 0;
             for col in 0..3{
@@ -90,6 +90,27 @@ impl<'a> Board<'a> {
                 break;
             }
         }
+        if !is_win{
+            let mut counter_diagonals: u16 = 0;
+            for diagonal_pos in 0..3{
+                if symbol_conteiner == &self.desk[diagonal_pos][diagonal_pos]{
+                    counter_diagonals+=1;
+                }
+            }
+            if counter_diagonals != 3 {
+                counter_diagonals = 0;
+            
+                for diagonal_pos in 0..3{
+                    if symbol_conteiner == &self.desk[diagonal_pos][BOARD_HEIGHT - ( diagonal_pos + 1 )]{
+                        counter_diagonals += 1;
+                    }
+                }
+            }
+            if counter_diagonals == 3 {
+                is_win = true;
+            }
+        }
+
         is_win
     }
         

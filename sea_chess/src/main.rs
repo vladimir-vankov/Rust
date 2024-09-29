@@ -65,10 +65,6 @@ fn main() {
         }
         game_board.set_player(&players[player_counter])
     }
-    println!("Print All Players");
-    for player in &players{
-        player.print_player_info();
-    }
 }
 
 fn get_coordinate(player_name :&String, axis: String, current_turn: &mut Point ){
