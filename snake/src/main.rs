@@ -1,9 +1,15 @@
 extern crate sdl2;
-
+mod const_vars;
+mod game_context;
+mod renderer;
+use renderer::Renderer;
+use game_context::GameContext;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use std::time::Duration;
+use const_vars::*;
+
 
 pub fn main() -> Result<(), String> {
     let sdl_context = match sdl2::init() {
@@ -20,7 +26,7 @@ pub fn main() -> Result<(), String> {
     };
 
     let window = video_subsystem
-    .window("First Rust created window", 800, 600)
+    .window("Snake Game", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
     .position_centered()
     .opengl()
     .build()
@@ -35,6 +41,8 @@ pub fn main() -> Result<(), String> {
     canvas.present();
 
     let mut event_pump = sdl_context.event_pump()?;
+    let mut context = GameContext::new();
+    let mut renderer = Renderer::new(window)?;
 
     'running: loop {
         for event in event_pump.poll_iter(){
