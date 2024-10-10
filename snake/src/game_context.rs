@@ -1,6 +1,4 @@
-pub enum GameState { Playing, Paused}
-pub enum PlayerDirection { Up, Down, Right, Left}
-pub struct Point(pub i32, pub i32);
+use crate::const_vars::*;
 
 pub struct GameContext {
     pub player_position: Vec<Point>,
