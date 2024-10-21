@@ -44,7 +44,7 @@ impl Renderer {
 
     pub fn draw(&mut self, context:&GameContext) -> Result<(), String> {
         self.draw_background(&context);
-        self.draw_player(&context);
+        self.draw_player(&context)?;
 
         self.canvas.set_draw_color(Color::RED);
         self.draw_dot(&Point(3, 3))?;
@@ -53,4 +53,7 @@ impl Renderer {
 
         Ok(())
     } 
+    // pub fn get_window(&mut self) -> &Window{
+    //     self.canvas.window()
+    // }
 }
