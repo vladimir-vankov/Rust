@@ -1,0 +1,14 @@
+[package]
+name = "sea_chess_gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+imgui = "0.12"
+imgui-sys = "0.12.0"
+imgui-sdl2-support = "0.13"
+sdl2 = "0.37"
+# imgui-wgpu = "0.24"
+pollster = "0.3"
+imgui-opengl-renderer = "0.7.0"
+gl = "0.14" 
