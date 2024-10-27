@@ -34,12 +34,24 @@ impl Renderer {
         self.canvas.clear();
     }
 
-    fn draw_player(&mut self, context: &GameContext) -> Result<(), String> {
+    fn draw_table(&mut self) -> Result<(), String> {
         self.canvas.set_draw_color(Color::GREEN);
-        for point in &context.player_position {
-            self.draw_dot(point)?;
-        }
-
+        self.canvas.fill_rect(Rect::new((10 * DOT_SIZE_IN_PXS) as i32,
+            0 as i32,
+            10 as u32,
+            (DOT_SIZE_IN_PXS * GRID_Y_SIZE) as u32,))?;
+        self.canvas.fill_rect(Rect::new((20 * DOT_SIZE_IN_PXS) as i32,
+            0 as i32,
+            10 as u32,
+            (DOT_SIZE_IN_PXS * GRID_Y_SIZE) as u32,))?;
+        self.canvas.fill_rect(Rect::new(0 as i32,
+            (10 * DOT_SIZE_IN_PXS) as i32,
+            (DOT_SIZE_IN_PXS * GRID_Y_SIZE) as u32,
+            10 as u32,))?;
+        self.canvas.fill_rect(Rect::new(0 as i32,
+            (20 * DOT_SIZE_IN_PXS) as i32,
+            (DOT_SIZE_IN_PXS * GRID_Y_SIZE) as u32,
+            10 as u32,))?;
         Ok(())
     }
     fn draw_menu(&mut self, context: &GameContext) -> Result<(), String>{
@@ -50,13 +62,10 @@ impl Renderer {
         match context.state {
             GameState::Playing | GameState::Paused => {
                 self.draw_background(&context);
-                self.draw_player(&context)?;
-
-                self.canvas.set_draw_color(Color::RED);
-                self.draw_dot(&Point(3, 3))?;
+                self.draw_table()?;
             },
             GameState::Menu => {
-                self.draw_menu(context);
+                self.draw_menu(context)?;
             }
         }
         

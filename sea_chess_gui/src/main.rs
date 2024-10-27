@@ -29,6 +29,7 @@ fn main() -> Result<(), String> {
     let window = video_subsystem
     .window("Sea Chess", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
     .position_centered()
+    // .resizable()
     .opengl()
     .build()
     .map_err(|e| e.to_string())?;
@@ -48,12 +49,8 @@ fn main() -> Result<(), String> {
                 Event::Quit { .. } => break 'running,
                 Event::KeyDown { keycode: Some(keycode), ..} => {
                     match keycode  {
-                        Keycode::W | Keycode::Up => context.move_up(),
-                        Keycode::S | Keycode::Down => context.move_down(),
-                        Keycode::A | Keycode::Left => context.move_left(),
-                        Keycode::D | Keycode::Right => context.move_right(),
                         Keycode::Escape => context.toggle_pause(),
-                        
+                        Keycode::M => context.toggle_menu(),
                         _ => {}
                     }
                 },
