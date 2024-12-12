@@ -219,10 +219,19 @@ fn create_new_tetrimino() -> Tetrimino{
 }
 
 impl Tetrimino {
-    fn rotate(&mut self){
-        self.current_state += 1;
-        if self.current_state as usize >= self.states.len(){
-            self.current_state = 0;
+    fn rotate(&mut self, game_map: &[Vec<u8>]){
+        // self.current_state += 1;
+        let mut tmp_state = self.current_state + 1;
+        if tmp_state as usize >= self.states.len(){
+            tmp_state = 0;
+        }
+        let x_pos = [0, -1, 1, -2, 2, -3];
+        for x in x_pos.iter(){
+            if self.test_position(game_map, tmp_state as usize, self.x + x, self.y) == true {
+                self.current_state = tmp_state;
+                self.x += *x;
+                break;
+            }
         }
     }
 
@@ -242,6 +251,44 @@ impl Tetrimino {
         return true;
     }
 
+    fn change_position(&mut self, game_map: &[Vec<u8>], new_x: isize, new_y: isize) -> bool {
+        if self.test_position(game_map, self.current_state as usize, new_x, new_y) == true {
+            self.x = new_x as isize;
+            self.y = new_y as isize;
+            true
+        }
+        else{
+            false
+        }
+    }
+
+    fn test_current_position(&self, game_map: &[Vec<u8>]) -> bool{
+        self.test_position(game_map, self.current_state as usize, self.x, self.y)
+    }
+}
+
+struct Tetris {
+    game_map: Vec<Vec<u8>>,
+    current_level: u32,
+    score: u32,
+    nb_lines: u32,
+    current_piece: Option<Tetrimino>,
+}
+
+impl Tetris {
+    fn new() -> Tetris{
+        let mut game_map = Vec::new();
+        for _ in 0..16{
+            game_map.push(vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        }
+        Tetris{
+            game_map: game_map,
+            current_level: 1,
+            score: 0,
+            nb_lines: 0,
+            current_piece: None,
+        }
+    }
 }
 
 fn main() {
