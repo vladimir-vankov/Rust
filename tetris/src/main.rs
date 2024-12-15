@@ -21,6 +21,7 @@ use std::io::{self, Write, Read};
 
 const TEXTURE_SIZE:u32 = 32;
 const CHANGE_COLOR_FREQUENCY:u64 = 5;
+const GAME_TABLE_SIZE:u32 = 16;
 
 #[derive(Clone, Copy)]
 enum TextureColor{
@@ -278,7 +279,7 @@ struct Tetris {
 impl Tetris {
     fn new() -> Tetris{
         let mut game_map = Vec::new();
-        for _ in 0..16{
+        for _ in 0..GAME_TABLE_SIZE{
             game_map.push(vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         }
         Tetris{
@@ -289,6 +290,108 @@ impl Tetris {
             current_piece: None,
         }
     }
+
+    fn check_lines(&mut self){
+        let mut y = 0;
+        while y < self.game_map.len() {
+            let mut complete = true;
+            for x in &self.game_map[y] {
+                if *x == 0 {
+                    complete = false;
+                    break;
+                }
+            }
+
+            if complete == true {
+                self.game_map.remove(y);
+                y -= 1;
+            }
+            y += 1;
+        }
+        while self.game_map.len() < GAME_TABLE_SIZE as usize {
+            self.game_map.insert(0, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        }
+    }
+
+    fn make_permanent(&mut self){
+        if let Some(ref mut piece) = self.current_piece{
+            let mut shift_y = 0;
+
+            while  shift_y < piece.states[piece.current_state as usize][shift_y].len() &&
+            (piece.y + shift_y < self.game_map.len()) {
+                let mut shift_x = 0;
+                while shift_x < piece.states[piece.current_state as usize][shift_y].len() &&
+                (piece.x + shift_x as isize) < self.game_map[piece.y + shift_y].len() as isize {
+                    if piece.states[piece.current_state as usize][shift_y][shift_x] != 0 {
+                        let x = piece.x + shift_x as isize;
+                        self.game_map[piece.y + shift_y][x as usize] = piece.states[piece.current_state as usize][shift_y][shift_x];
+                    }
+                    shift_x += 1;
+                }
+                shift_y += 1;
+            }
+        }
+        self.check_lines();
+        self.current_piece = None;
+    }
+}
+
+
+fn handle_events(tetris: &mut Tetris, quit: &mut bool, timer: &mut SystemTime,
+                                                    event_pump: &mut sdl2::EventPump) -> bool {
+    let mut make_permanent = false;
+    if let Some(ref mut piece) = tetris.current_piece {
+        let mut tmp_x = piece.x;
+        let mut tmp_y = piece.y;
+        for event in event_pump.poll_iter(){
+            match event {
+                Event::Quit { .. } |
+                Event::KeyDown { keycode: Some(Keycode::Escape), ..} => 
+                {
+                    *quit = true;
+                    break;
+                }
+                Event::KeyDown {  keycode: Some(Keycode::Down), ..} =>
+                {
+                    *timer = SystemTime::now();
+                    tmp_y += 1;
+                }
+                Event::KeyDown {  keycode: Some(Keycode::Right), ..} =>
+                {
+                    tmp_x += 1;
+                }
+                Event::KeyDown {  keycode: Some(Keycode::Left), ..} =>
+                {
+                    tmp_x -= 1;
+                }
+                Event::KeyDown {  keycode: Some(Keycode::Up), ..} =>
+                {
+                    piece.rotate(&tetris.game_map);
+                }
+                Event::KeyDown {  keycode: Some(Keycode::Space), ..} =>
+                {
+                    let x = piece.x;
+                    let mut y = piece.y;
+                    while piece.change_position(&tetris.game_map, x, y + 1) == true {
+                        y += 1;
+                    }
+                    make_permanent = true;
+                }
+                _ => {}
+            }
+        }
+        if !make_permanent { 
+            if piece.change_position(&tetris.game_map, tmp_x, tmp_y) == false &&
+            tmp_y != piece.y {
+                make_permanent = true;
+            }
+        }
+    }
+    if make_permanent {
+        tetris.make_permanent();
+        *timer = SystemTime::now();
+    }
+    make_permanent
 }
 
 fn main() {
