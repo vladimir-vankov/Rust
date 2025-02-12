@@ -1,75 +1,140 @@
 extern crate sdl2;
-mod const_vars;
-mod game_context;
-mod renderer;
-use renderer::Renderer;
-use game_context::GameContext;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-// use sdl2::pixels::Color;
-use std::time::Duration;
-use const_vars::*;
-use std::time::Instant;
+// extern crate imgui_glow_renderer;
+use sdl2::sys::{SDL_SetWindowResizable, SDL_bool};
+use imgui::WindowFlags;
+use imgui::Context;
+use imgui_glow_renderer::{
+    glow::{self, HasContext},
+    AutoRenderer,
+};
+use imgui_sdl2_support::SdlPlatform;
+use sdl2::{
+    event::{Event, WindowEvent},
+    video::{GLProfile, Window},
+};
 
-fn main() -> Result<(), String> {
-    let sdl_context = match sdl2::init() {
-        Ok(result_context) => result_context,
-        Err(e) =>{
-            return  Err(e);
-        }
-    };
-    let video_subsystem = match sdl_context.video() {
-        Ok(result_subsystem) => result_subsystem,
-        Err(e) => {
-            return  Err(e);
-        }
-    };
+// Create a new glow context.
+fn glow_context(window: &Window) -> glow::Context {
+    unsafe {
+        glow::Context::from_loader_function(|s| window.subsystem().gl_get_proc_address(s) as _)
+    }
+}
 
+fn main() {
+    /* initialize SDL and its video subsystem */
+    let sdl = sdl2::init().unwrap();
+    let video_subsystem = sdl.video().unwrap();
 
+    /* hint SDL to initialize an OpenGL 3.3 core profile context */
+    let gl_attr = video_subsystem.gl_attr();
+
+    gl_attr.set_context_version(3, 3);
+    gl_attr.set_context_profile(GLProfile::Core);
+    let mut window_width:u32 = 800;
+    let mut window_height:u32 = 600;
+    /* create a new window, be sure to call opengl method on the builder when using glow! */
     let window = video_subsystem
-    .window("Sea Chess", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
-    .position_centered()
-    // .resizable()
-    .opengl()
-    .build()
-    .map_err(|e| e.to_string())?;
+        .window("Sea Chess", window_width, window_height)
+        .allow_highdpi()
+        .opengl()
+        .position_centered()
+        .resizable()
+        .build()
+        .unwrap();
 
-    let _gl_context = window.gl_create_context().expect("Couldn't create GL context");
-    
-    ////////////////////////
-    let mut event_pump = sdl_context.event_pump()?;
-    let mut context = GameContext::new();
-    let mut renderer = Renderer::new(window)?;
-    let mut frame_counter = 0;
-    
+    // let raw_window = window.raw();
+    // unsafe {
+    //     SDL_SetWindowResizable(raw_window, SDL_bool::SDL_TRUE);
+    // }
 
-    'running: loop {
-        for event in event_pump.poll_iter(){
+    println!("Window flags: {:?}", window.window_flags());
+    /* create a new OpenGL context and make it current */
+    let gl_context = window.gl_create_context().unwrap();
+    window.gl_make_current(&gl_context).unwrap();
+
+    /* enable vsync to cap framerate */
+    window.subsystem().gl_set_swap_interval(1).unwrap();
+
+    /* create new glow and imgui contexts */
+    let gl = glow_context(&window);
+
+    /* create context */
+    let mut imgui = Context::create();
+
+    /* disable creation of files on disc */
+    imgui.set_ini_filename(None);
+    imgui.set_log_filename(None);
+
+    /* setup platform and renderer, and fonts to imgui */
+    imgui
+        .fonts()
+        .add_font(&[imgui::FontSource::DefaultFontData { config: None }]);
+
+    /* create platform and renderer */
+    let mut platform = SdlPlatform::new(&mut imgui);
+    let mut renderer = AutoRenderer::new(gl, &mut imgui).unwrap();
+    
+    /* start main loop */
+    let mut event_pump = sdl.event_pump().unwrap();
+    let mut show = false;
+    'main: loop {
+        for event in event_pump.poll_iter() {
+            /* pass all events to imgui platfrom */
+            platform.handle_event(&mut imgui, &event);
             match event {
-                Event::Quit { .. } => break 'running,
-                Event::KeyDown { keycode: Some(keycode), ..} => {
-                    match keycode  {
-                        Keycode::Escape => context.toggle_pause(),
-                        Keycode::M => context.toggle_menu(),
-                        _ => {}
-                    }
-                },
-                _ => {},
+                Event::Window { win_event, .. } => match win_event{
+                    WindowEvent::Resized(width, height) => {
+                        window_width = width as u32;
+                        window_height = height as u32;
+                        println!("Window width {}, height {}", window_width, window_height);
+                    },
+                    _ => {}
+                }
+                Event::Quit { .. } => break 'main,
+                _ => {}
             }
         }
-        frame_counter += 1;
-        if frame_counter % 10 == 0 {
-            context.next_tick();
-            frame_counter = 0;
-        }
-        match renderer.draw(&context) {
-            Ok(()) => {},
-            Err(e) => println!("There is been error : {}", e)
-        }
 
-        
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+        /* call prepare_frame before calling imgui.new_frame() */
+        platform.prepare_frame(&mut imgui, &window, &event_pump);
+
+        let ui = imgui.new_frame();
+        let player_one = Player::new("Vladimir".to_string(), 'X');
+        if let Some(wt) = ui.window("Example window")
+        .size([window_width as f32, window_height as f32], imgui::Condition::Always)
+        .flags(WindowFlags::NO_TITLE_BAR | WindowFlags::NO_RESIZE)
+        .position([0.0, 0.0], imgui::Condition::FirstUseEver)
+        .begin()
+        {
+            if ui.button_with_size("Click me:", [100.0, 50.0]){
+                show = !show;
+            }
+            if show {
+                ui.text("WINDOW IS VISIBLE ".to_string() + &player_one.name);
+                println!("{}",player_one.name);
+            }
+            wt.end();
+        }
+        /* render */
+        let draw_data = imgui.render();
+
+        unsafe { renderer.gl_context().clear(glow::COLOR_BUFFER_BIT) };
+        renderer.render(draw_data).unwrap();
+
+        window.gl_swap_window();
     }
+}
 
-    Ok(())
+struct Player {
+    name: String,
+    symbol: char,
+}
+
+impl Player {
+    pub fn new(_name:String, _symbol:char)-> Player {
+        Player{
+            name : _name,
+            symbol : _symbol,
+        }
+    }
 }
