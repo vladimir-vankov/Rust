@@ -1,6 +1,8 @@
 extern crate sdl2;
+use imgui::ColorStackToken;
+use imgui::ItemWidthStackToken;
 // extern crate imgui_glow_renderer;
-use sdl2::sys::{SDL_SetWindowResizable, SDL_bool};
+// use sdl2::sys::{SDL_SetWindowResizable, SDL_bool};
 use imgui::WindowFlags;
 use imgui::Context;
 use imgui_glow_renderer::{
@@ -77,6 +79,7 @@ fn main() {
     /* start main loop */
     let mut event_pump = sdl.event_pump().unwrap();
     let mut show = false;
+    let mut show_once: bool = false;
     'main: loop {
         for event in event_pump.poll_iter() {
             /* pass all events to imgui platfrom */
@@ -99,7 +102,7 @@ fn main() {
         platform.prepare_frame(&mut imgui, &window, &event_pump);
 
         let ui = imgui.new_frame();
-        let player_one = Player::new("Vladimir".to_string(), 'X');
+        let mut player_one = Player::new("Vladimir".to_string(), 'X');
         if let Some(wt) = ui.window("Example window")
         .size([window_width as f32, window_height as f32], imgui::Condition::Always)
         .flags(WindowFlags::NO_TITLE_BAR | WindowFlags::NO_RESIZE)
@@ -108,10 +111,24 @@ fn main() {
         {
             if ui.button_with_size("Click me:", [100.0, 50.0]){
                 show = !show;
+                show_once = true;
             }
+            let button_one = Button::new("test button".to_string(), 
+                                                100.0,
+                                                50.0,
+                                                print_player);
+            let button_two = Button::new("test button 2".to_string(), 
+                                                100.0,
+                                                50.0,
+                                                print_player);
+            button_one.draw(ui, &mut player_one);
+            ui.same_line();
+            button_two.draw(ui, &mut player_one);
             if show {
+                if show_once {
+                    show_once = false;
+                }
                 ui.text("WINDOW IS VISIBLE ".to_string() + &player_one.name);
-                println!("{}",player_one.name);
             }
             wt.end();
         }
@@ -128,6 +145,46 @@ fn main() {
 struct Player {
     name: String,
     symbol: char,
+}
+const RED: [f32;4] = [1.0, 0.0, 0.0, 1.0];
+const RED_HOVERD: [f32;4] = [1.0, 0.5, 0.5, 1.0];
+const RED_ACTIVE: [f32;4] = [0.8, 0.0, 0.0, 1.0];
+struct Button {
+    name: String,
+    width: f32,
+    height: f32,
+    on_click: fn(&mut Player),
+    color: Option<[[f32; 4]; 4]>
+}
+impl Button {
+    pub fn new(_name: String, _width: f32, _height: f32, _on_click: fn(&mut Player) ) -> Button {
+        Button{
+            name: _name,
+            width: _width,
+            height: _height,
+            on_click: _on_click,
+            color: None
+        }
+    }
+
+    pub fn draw(&self, ui: &imgui::Ui, player: &mut Player){
+        let custom_color = RED; // RGBA (Red)
+
+        let color:[ColorStackToken;3] = [ui.push_style_color(imgui::StyleColor::Button, custom_color),
+        ui.push_style_color(imgui::StyleColor::ButtonHovered, RED_HOVERD), // Lighter red when hovered
+        ui.push_style_color(imgui::StyleColor::ButtonActive, RED_ACTIVE)]; // Darker red when clicked
+
+        if ui.button_with_size(&self.name, [self.width, self.height]){
+            (self.on_click)(player);
+        }
+        for item  in color {
+            item.pop();
+        }
+    }
+}
+
+fn print_player(player: &mut Player){
+    println!("Player name : {} \nPlayer Symbol : {}",player.name, player.symbol);
 }
 
 impl Player {
