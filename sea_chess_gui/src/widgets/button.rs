@@ -1,18 +1,16 @@
 use imgui::ColorStackToken;
 use crate::game::player::Player;
-const RED: [f32;4] = [1.0, 0.0, 0.0, 1.0];
-const RED_HOVERD: [f32;4] = [1.0, 0.5, 0.5, 1.0];
-const RED_ACTIVE: [f32;4] = [0.8, 0.0, 0.0, 1.0];
+use crate::widgets::colors::*;
 
 pub struct Button {
     name: String,
     width: f32,
     height: f32,
-    on_click: fn(&mut Player),
+    on_click: Box<dyn FnMut()>,
     color: Option<[[f32; 4]; 3]>
 }
 impl Button {
-    pub fn new(_name: String, _width: f32, _height: f32, _on_click: fn(&mut Player) ) -> Button {
+    pub fn new(_name: String, _width: f32, _height: f32, _on_click: Box<dyn FnMut()> ) -> Button {
         Button{
             name: _name,
             width: _width,
@@ -28,7 +26,7 @@ impl Button {
         }
     }
 
-    pub fn draw(&mut self, ui: &imgui::Ui, player: &mut Player){
+    pub fn draw(&mut self, ui: &imgui::Ui){
         self.init();
 
         let color:[ColorStackToken;3] = [ui.push_style_color(imgui::StyleColor::Button, self.color.unwrap()[0]),
@@ -36,7 +34,7 @@ impl Button {
         ui.push_style_color(imgui::StyleColor::ButtonActive, self.color.unwrap()[2])]; // Darker red when clicked
 
         if ui.button_with_size(&self.name, [self.width, self.height]){
-            (self.on_click)(player);
+            (self.on_click)();
         }
         for item  in color {
             item.pop();

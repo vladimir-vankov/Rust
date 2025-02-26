@@ -48,11 +48,6 @@ fn main() {
         .build()
         .unwrap();
 
-    // let raw_window = window.raw();
-    // unsafe {
-    //     SDL_SetWindowResizable(raw_window, SDL_bool::SDL_TRUE);
-    // }
-
     println!("Window flags: {:?}", window.window_flags());
     /* create a new OpenGL context and make it current */
     let gl_context = window.gl_create_context().unwrap();
@@ -107,6 +102,7 @@ fn main() {
 
         let ui = imgui.new_frame();
         let mut player_one = Player::new("Vladimir".to_string(), 'X');
+        let mut player_two = Player::new("Player_Two".to_string(), 'O');
         if let Some(wt) = ui.window("Example window")
         .size([window_width as f32, window_height as f32], imgui::Condition::Always)
         .flags(WindowFlags::NO_TITLE_BAR | WindowFlags::NO_RESIZE | WindowFlags::NO_MOVE)
@@ -120,19 +116,19 @@ fn main() {
             let mut button_one = Button::new("test button".to_string(), 
                                                 100.0,
                                                 50.0,
-                                                print_player);
+                                                Box::new(move || print_player(&mut player_one)) );
             let mut button_two = Button::new("test button 2".to_string(), 
                                                 100.0,
                                                 50.0,
-                                                print_player);
-            button_one.draw(ui, &mut player_one);
+                                                Box::new(move || print_player(&mut player_two)) );
+            button_one.draw(ui);
             ui.same_line();
-            button_two.draw(ui, &mut player_one);
+            button_two.draw(ui);
             if show {
                 if show_once {
                     show_once = false;
                 }
-                ui.text("WINDOW IS VISIBLE ".to_string() + &player_one.name);
+                ui.text("WINDOW IS VISIBLE ".to_string());
             }
             wt.end();
         }
