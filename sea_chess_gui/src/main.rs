@@ -18,6 +18,8 @@ mod widgets;
 use widgets::button::Button as Button;
 mod game;
 use game::player::Player as Player;
+use widgets::colors::BUTTON_HEIGHT;
+use widgets::colors::BUTTON_WIDTH;
 
 // Create a new glow context.
 fn glow_context(window: &Window) -> glow::Context {
@@ -77,8 +79,7 @@ fn main() {
     
     /* start main loop */
     let mut event_pump = sdl.event_pump().unwrap();
-    let mut show = false;
-    let mut show_once: bool = false;
+    let mut show:bool = true;
     'main: loop {
         for event in event_pump.poll_iter() {
             /* pass all events to imgui platfrom */
@@ -99,36 +100,36 @@ fn main() {
 
         /* call prepare_frame before calling imgui.new_frame() */
         platform.prepare_frame(&mut imgui, &window, &event_pump);
-
+        
         let ui = imgui.new_frame();
-        let mut player_one = Player::new("Vladimir".to_string(), 'X');
-        let mut player_two = Player::new("Player_Two".to_string(), 'O');
         if let Some(wt) = ui.window("Example window")
         .size([window_width as f32, window_height as f32], imgui::Condition::Always)
         .flags(WindowFlags::NO_TITLE_BAR | WindowFlags::NO_RESIZE | WindowFlags::NO_MOVE)
         .position([0.0, 0.0], imgui::Condition::FirstUseEver)
         .begin()
         {
-            if ui.button_with_size("Click me:", [100.0, 50.0]){
-                show = !show;
-                show_once = true;
+            let button_width:f32 = window_width as f32 / 3.0;
+            let button_height:f32 = BUTTON_HEIGHT + 20.0;
+            if show{
+                println!("cursor screen pos : {:?}", ui.cursor_screen_pos());
+                show = false;
             }
-            let mut button_one = Button::new("test button".to_string(), 
-                                                100.0,
-                                                50.0,
-                                                Box::new(move || print_player(&mut player_one)) );
-            let mut button_two = Button::new("test button 2".to_string(), 
-                                                100.0,
-                                                50.0,
-                                                Box::new(move || print_player(&mut player_two)) );
-            button_one.draw(ui);
-            ui.same_line();
-            button_two.draw(ui);
-            if show {
-                if show_once {
-                    show_once = false;
-                }
-                ui.text("WINDOW IS VISIBLE ".to_string());
+            buttons_align(ui, &(window_width as f32), &button_width);
+            if ui.button_with_size("NEW GAME", [button_width, button_height]){
+                println!("NEW GAME");
+            }
+            buttons_align(ui, &(window_width as f32), &button_width);
+            if ui.button_with_size("LAN MULTIPLAYER", [button_width, button_height]){
+                println!("LAN MULTIPLAYER");
+            }
+            buttons_align(ui, &(window_width as f32), &button_width);
+            if ui.button_with_size("HIGHSCORES", [button_width, button_height]){
+                println!("HIGHSCORES");
+            }
+            buttons_align(ui, &(window_width as f32), &button_width);
+            if ui.button_with_size("EXIT", [button_width, button_height]){
+                println!("EXIT");
+                break 'main;
             }
             wt.end();
         }
@@ -142,8 +143,11 @@ fn main() {
     }
 }
 
-
-
+//It should not work but because of imgui implementation it does
+fn buttons_align(ui: &imgui::Ui, window_width: &f32, button_width: &f32){
+    let current_cursor_pos: [f32; 2] = ui.cursor_screen_pos();
+    ui.set_cursor_pos([(window_width/2.0 - button_width/2.0), current_cursor_pos[1]]);
+}
 
 
 fn print_player(player: &mut Player){
