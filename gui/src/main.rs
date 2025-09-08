@@ -13,7 +13,8 @@ use sdl2::render::Canvas;
 // use sdl2::sys::Window;
 use sdl2::video::Window;
 use sdl2::rect::Rect;
-// use sdl2::render::Canvas;
+use std::collections::VecDeque;
+
 
 pub fn main() -> Result<(), String> {
     let sdl_context = match sdl2::init() {
@@ -42,9 +43,8 @@ pub fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut first_button = Button::new("Test", sdl2::pixels::Color::RGB(255, 0, 0), 300, 100, 200, 200); 
-    
+    let mut events_queue : VecDeque<CustomEvent> = VecDeque::new();
     'running: loop {
-        let mut touch_point = Point::new(0, 0);
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -54,9 +54,7 @@ pub fn main() -> Result<(), String> {
                 Event::MouseButtonDown { mouse_btn, x, y, .. } => {
                     match mouse_btn {
                         MouseButton::Left => {
-                            println!("left click ({}, {})", x, y);
-                            touch_point.x = x;
-                            touch_point.y = y;
+                            events_queue.push_back(CustomEvent { event_type: EventType::Touch, point: Point::new(x, y) });
                         },
                         MouseButton::Right => println!("right click ({}, {})", x, y),
                         MouseButton::Middle => println!("middle click ({}, {})", x, y),
@@ -65,24 +63,24 @@ pub fn main() -> Result<(), String> {
                 }
                 Event::MouseButtonUp { mouse_btn, x, y, .. } => {
                     println!("Released {:?} : ({}, {})", mouse_btn, x, y);
+                    events_queue.push_back(CustomEvent { event_type: EventType::UnTouch, point: Point::new(x, y) });
                 }
                 _ => {}
             }
         }
         
         let mouse_state = event_pump.mouse_state();
-        let mouse_pos: Point = Point::new(mouse_state.x(), mouse_state.y());
+        events_queue.push_back(CustomEvent { event_type: EventType::Hover, point: Point::new(mouse_state.x(), mouse_state.y()) });
         
-        // println!("Mouse hover ({}, {})", current_pos_x, current_pos_y);
-
         canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
         
         canvas.clear();
-        // canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 0, 0));
         
         first_button.draw(&mut canvas);
-        first_button.on_touch(&touch_point);
-        first_button.on_hover(&mouse_pos);
+        while let Some(custom_event) = events_queue.pop_front(){
+            first_button.handle_event(custom_event);
+        }
+        
         canvas.present();
 
         ::std::thread::sleep(Duration::from_millis(16));
@@ -91,6 +89,16 @@ pub fn main() -> Result<(), String> {
     Ok(())
 }
 
+enum EventType{
+    Touch,
+    UnTouch,
+    Hover
+}
+
+struct CustomEvent{
+    event_type: EventType,
+    point : Point
+}
 
 struct Button{
     text: String,
@@ -103,6 +111,26 @@ struct Button{
     is_hovered : bool,
     color_hover: Color,
     btn_rect : Rect
+}
+
+trait clickable {
+    fn on_touch(& mut self, touch_point: & Point) -> bool;
+    fn on_unTouch(& mut self, touch_point: & Point) -> bool{
+        println!("UnTouch ({}, {})", touch_point.x, touch_point.y);
+        true
+    }
+    fn on_hover(& mut self, touch_point: & Point) -> bool;
+    fn handle_event(& mut self, custom_event:CustomEvent){
+        match custom_event.event_type {
+            EventType::Touch => {
+                _ = self.on_touch(&custom_event.point)
+            },
+            EventType::Hover => {
+                _ = self.on_hover(&custom_event.point)
+            },
+            _ => {}
+        }
+    }
 }
 
 impl Button {
@@ -132,6 +160,10 @@ impl Button {
         Ok(())
     }
 
+    //TODO create handle_event function to combine on_touch -n_hover 
+}
+
+impl clickable for Button {
     fn on_touch(& mut self, touch_point: & Point) -> bool{
         if touch_point.x > self.x && 
             touch_point.x < self.x + self.width && 
@@ -156,6 +188,4 @@ impl Button {
             self.is_hovered = false;
             return false
     }
-
-    //TODO create handle_event function to combine on_touch -n_hover 
 }
