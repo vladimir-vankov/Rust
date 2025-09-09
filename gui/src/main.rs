@@ -6,14 +6,17 @@ pub const GRID_Y_SIZE: i32 = 30;
 pub const DOT_SIZE_IN_PXS: i32 = 20;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
-use sdl2::rect::{self, Point};
+use sdl2::rect::Point;
 use sdl2::mouse::MouseButton;
-use sdl2::render::Canvas;
-// use sdl2::sys::Window;
-use sdl2::video::Window;
-use sdl2::rect::Rect;
+// use sdl2::render::Canvas;
+// use sdl2::video::Window;
 use std::collections::VecDeque;
+
+mod widgets;
+use widgets::{clickable::Clickable, button::Button};
+use widgets::utils::CustomEvent;
+use widgets::utils::EventType;
+
 
 
 pub fn main() -> Result<(), String> {
@@ -76,7 +79,7 @@ pub fn main() -> Result<(), String> {
         
         canvas.clear();
         
-        first_button.draw(&mut canvas);
+        let _ = first_button.draw(&mut canvas);
         while let Some(custom_event) = events_queue.pop_front(){
             first_button.handle_event(custom_event);
         }
@@ -89,103 +92,6 @@ pub fn main() -> Result<(), String> {
     Ok(())
 }
 
-enum EventType{
-    Touch,
-    UnTouch,
-    Hover
-}
 
-struct CustomEvent{
-    event_type: EventType,
-    point : Point
-}
 
-struct Button{
-    text: String,
-    color: sdl2::pixels::Color,
-    width: i32,
-    height: i32,
-    x: i32,
-    y: i32,
-    is_touched : bool,
-    is_hovered : bool,
-    color_hover: Color,
-    btn_rect : Rect
-}
 
-trait clickable {
-    fn on_touch(& mut self, touch_point: & Point) -> bool;
-    fn on_unTouch(& mut self, touch_point: & Point) -> bool{
-        println!("UnTouch ({}, {})", touch_point.x, touch_point.y);
-        true
-    }
-    fn on_hover(& mut self, touch_point: & Point) -> bool;
-    fn handle_event(& mut self, custom_event:CustomEvent){
-        match custom_event.event_type {
-            EventType::Touch => {
-                _ = self.on_touch(&custom_event.point)
-            },
-            EventType::Hover => {
-                _ = self.on_hover(&custom_event.point)
-            },
-            _ => {}
-        }
-    }
-}
-
-impl Button {
-    fn new(text: &str, color: sdl2::pixels::Color, width: i32, height: i32, x: i32, y: i32) -> Self{
-        Self {
-            text : text.to_string(),
-            color : color,
-            width : width,
-            height : height,
-            x : x,
-            y : y,
-            is_touched : false,
-            is_hovered : false,
-            color_hover: Color::RGB(173, 235, 179),
-            btn_rect : Rect::new(x, y, width as u32, height as u32)
-        }
-    }
-
-    fn draw(& self, canvas: &mut Canvas<Window>) -> Result<(), String>{
-        if !self.is_hovered{
-            canvas.set_draw_color(self.color);
-        }
-        else{
-            canvas.set_draw_color(self.color_hover);
-        }
-        canvas.fill_rect(self.btn_rect);
-        Ok(())
-    }
-
-    //TODO create handle_event function to combine on_touch -n_hover 
-}
-
-impl clickable for Button {
-    fn on_touch(& mut self, touch_point: & Point) -> bool{
-        if touch_point.x > self.x && 
-            touch_point.x < self.x + self.width && 
-            touch_point.y > self.y &&
-            touch_point.y < self.y + self.height{
-                println!("touch");
-                self.is_touched = true;
-                return true;
-            }
-            self.is_touched = false;
-            return false
-    }
-
-    fn on_hover(& mut self, touch_point: & Point) -> bool{
-        if touch_point.x > self.x && 
-            touch_point.x < self.x + self.width && 
-            touch_point.y > self.y &&
-            touch_point.y < self.y + self.height{
-                self.is_hovered = true;
-                return true;
-            }
-            self.is_hovered = false;
-            return false
-    }
-}
