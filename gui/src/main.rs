@@ -8,8 +8,8 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Point;
 use sdl2::mouse::MouseButton;
-// use sdl2::render::Canvas;
-// use sdl2::video::Window;
+// use sdl2::render::TextureCreator;
+// use sdl2::ttf::Font;
 use std::collections::VecDeque;
 
 mod widgets;
@@ -33,6 +33,8 @@ pub fn main() -> Result<(), String> {
         }
     };
 
+    let ttf_context = sdl2::ttf::init().unwrap();
+    let font = ttf_context.load_font("fonts/Roboto-ExtraBold.ttf", 24).map_err(|e| e.to_string())?;
 
     let window = video_subsystem
     .window("Test Window", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
@@ -43,9 +45,19 @@ pub fn main() -> Result<(), String> {
     .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let texture_creator = canvas.texture_creator();
 
     let mut event_pump = sdl_context.event_pump()?;
-    let mut first_button = Button::new("Test", sdl2::pixels::Color::RGB(255, 0, 0), 300, 100, 200, 200); 
+    let mut first_button = Button::new("Enter", 
+                                                                    sdl2::pixels::Color::RGB(255, 0, 0), 
+                                                                    300, 100, 200, 200,
+                                                                &font,
+                                                            &texture_creator)?; 
+    let mut second_button = Button::new("Quit", 
+                                                                    sdl2::pixels::Color::RGB(255, 0, 0),
+                                                                    300, 100, 200, 400,
+                                                                &font,
+                                                                &texture_creator)?; 
     let mut events_queue : VecDeque<CustomEvent> = VecDeque::new();
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -80,8 +92,10 @@ pub fn main() -> Result<(), String> {
         canvas.clear();
         
         let _ = first_button.draw(&mut canvas);
+        let _ = second_button.draw(&mut canvas);
         while let Some(custom_event) = events_queue.pop_front(){
-            first_button.handle_event(custom_event);
+            first_button.handle_event(&custom_event);
+            second_button.handle_event(&custom_event);
         }
         
         canvas.present();
