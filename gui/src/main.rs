@@ -1,4 +1,5 @@
 extern crate sdl2;
+use std::cell::RefCell;
 use std::time::Duration;
 
 pub const GRID_X_SIZE: i32 = 40;
@@ -8,14 +9,15 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Point;
 use sdl2::mouse::MouseButton;
-// use sdl2::render::TextureCreator;
-// use sdl2::ttf::Font;
 use std::collections::VecDeque;
+use std::rc::Rc;
 
 mod widgets;
 use widgets::{clickable::Clickable, button::Button};
 use widgets::utils::CustomEvent;
 use widgets::utils::EventType;
+
+use crate::widgets::observer;
 
 
 
@@ -47,6 +49,9 @@ pub fn main() -> Result<(), String> {
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
     let texture_creator = canvas.texture_creator();
 
+    let running = Rc::new(RefCell::new(true));
+    let running_clone: Rc<RefCell<bool>> = running.clone();
+
     let mut event_pump = sdl_context.event_pump()?;
     let mut first_button = Button::new("Enter", 
                                                                     sdl2::pixels::Color::RGB(255, 0, 0), 
@@ -58,8 +63,15 @@ pub fn main() -> Result<(), String> {
                                                                     300, 100, 200, 400,
                                                                 &font,
                                                                 &texture_creator)?; 
+    second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
+            *running_clone.borrow_mut() = false;
+        }))
+    );
     let mut events_queue : VecDeque<CustomEvent> = VecDeque::new();
     'running: loop {
+        if !*running.borrow() {
+            break 'running;
+        }
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -105,7 +117,3 @@ pub fn main() -> Result<(), String> {
 
     Ok(())
 }
-
-
-
-

@@ -2,12 +2,12 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use sdl2::render::{Canvas, Texture, TextureCreator};
-// use sdl2::sys::Font;
 use sdl2::ttf::Font;
 use sdl2::video::{Window, WindowContext};
-// use sdl2::render::TextureQuery;
 use super::clickable::Clickable;
+use super::observer::{Event, Publisher};
 
+// #[derive(Default)]
 pub struct Button<'a>{
     text: String,
     color: sdl2::pixels::Color,
@@ -21,6 +21,7 @@ pub struct Button<'a>{
     btn_rect : Rect,
     text_texture : Option<Texture<'a>>,
     text_rect : Option<Rect>,
+    publisher: Publisher
 }
 
 
@@ -41,6 +42,7 @@ impl<'a> Button<'a> {
             btn_rect : Rect::new(x, y, width as u32, height as u32),
             text_texture : None,
             text_rect : None,
+            publisher : Publisher::default()
         };
 
         let _ = button.prepare_text(font, texture_creator);
@@ -79,6 +81,13 @@ impl<'a> Button<'a> {
         Ok(())
     }
 
+    pub fn events(&mut self) -> &mut Publisher{
+        &mut self.publisher
+    }
+
+    pub fn notify(&mut self){
+        self.publisher.notify(Event::Click);
+    }
     //TODO create handle_event function to combine on_touch -n_hover 
 }
 
@@ -90,6 +99,7 @@ impl<'a> Clickable for Button<'a> {
             touch_point.y < self.y + self.height{
                 println!("touch");
                 self.is_touched = true;
+                self.notify();
                 return true;
             }
             self.is_touched = false;
