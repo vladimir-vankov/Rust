@@ -7,13 +7,13 @@ pub const GRID_Y_SIZE: i32 = 30;
 pub const DOT_SIZE_IN_PXS: i32 = 20;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::Point;
+use sdl2::rect::{Point, Rect};
 use sdl2::mouse::MouseButton;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
 mod widgets;
-use widgets::{clickable::Clickable, button::Button};
+use widgets::{clickable::Clickable, button::Button, text_input::TextInput};
 use widgets::utils::CustomEvent;
 use widgets::utils::EventType;
 
@@ -55,12 +55,17 @@ pub fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
     let mut first_button = Button::new("Enter", 
                                                                     sdl2::pixels::Color::RGB(255, 0, 0), 
-                                                                    300, 100, 200, 200,
+                                                                    300, 100, 200, 100,
                                                                 &font,
                                                             &texture_creator)?; 
     let mut second_button = Button::new("Quit", 
                                                                     sdl2::pixels::Color::RGB(255, 0, 0),
-                                                                    300, 100, 200, 400,
+                                                                    300, 100, 200, 250,
+                                                                &font,
+                                                                &texture_creator)?;
+    let mut text_input = TextInput::new("Please Enter text ...", 
+                                                                    sdl2::pixels::Color::RGB(255, 0, 0),
+                                                                    Rect::new(200, 400, 400, 50),
                                                                 &font,
                                                                 &texture_creator)?; 
     second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
@@ -105,6 +110,7 @@ pub fn main() -> Result<(), String> {
         
         let _ = first_button.draw(&mut canvas);
         let _ = second_button.draw(&mut canvas);
+        let _ = text_input.draw(&mut canvas);
         while let Some(custom_event) = events_queue.pop_front(){
             first_button.handle_event(&custom_event);
             second_button.handle_event(&custom_event);
