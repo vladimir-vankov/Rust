@@ -17,6 +17,9 @@ use widgets::{clickable::Clickable, button::Button, text_input::TextInput};
 use widgets::utils::CustomEvent;
 use widgets::utils::EventType;
 
+mod managers;
+use managers::font_manager::FontManger;
+
 use crate::widgets::observer;
 
 
@@ -36,7 +39,7 @@ pub fn main() -> Result<(), String> {
     };
 
     let ttf_context = sdl2::ttf::init().unwrap();
-    let font = ttf_context.load_font("fonts/Roboto-ExtraBold.ttf", 24).map_err(|e| e.to_string())?;
+    let font_manager = FontManger::new(&ttf_context)?;
 
     let window = video_subsystem
     .window("Test Window", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
@@ -54,19 +57,19 @@ pub fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut first_button = Button::new("Enter", 
-                                                                    sdl2::pixels::Color::RGB(255, 0, 0), 
+                                                                    sdl2::pixels::Color::RGB(41, 74, 122), 
                                                                     300, 100, 200, 100,
-                                                                &font,
+                                                                font_manager.get_font(24).unwrap(),
                                                             &texture_creator)?; 
     let mut second_button = Button::new("Quit", 
-                                                                    sdl2::pixels::Color::RGB(255, 0, 0),
+                                                                    sdl2::pixels::Color::RGB(41, 74, 122),
                                                                     300, 100, 200, 250,
-                                                                &font,
+                                                                font_manager.get_font(24).unwrap(),
                                                                 &texture_creator)?;
     let mut text_input = TextInput::new("Please Enter text ...", 
-                                                                    sdl2::pixels::Color::RGB(255, 0, 0),
+                                                                    sdl2::pixels::Color::RGB(34, 51, 75),
                                                                     Rect::new(200, 400, 400, 50),
-                                                                &font,
+                                                                font_manager.get_font(16).unwrap(),
                                                                 &texture_creator)?; 
     second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
             *running_clone.borrow_mut() = false;
@@ -114,6 +117,7 @@ pub fn main() -> Result<(), String> {
         while let Some(custom_event) = events_queue.pop_front(){
             first_button.handle_event(&custom_event);
             second_button.handle_event(&custom_event);
+            text_input.handle_event(&custom_event);
         }
         
         canvas.present();

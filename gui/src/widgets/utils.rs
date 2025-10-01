@@ -13,6 +13,7 @@ pub struct CustomEvent{
     pub point : Point
 }
 
+#[allow(dead_code)]
 pub fn get_text_size(font: &Font, text : &str) -> Result<(u32, u32), String>{
     let surface = font.render(text).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;    
     Ok(surface.size())

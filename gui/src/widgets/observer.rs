@@ -23,7 +23,8 @@ impl Publisher {
         self.events.entry(event_type).or_default().push(listener);
     }
     //TODO think about unsubscribe method
-    pub fn unsubscribe(& mut self, event_type: Event, listener: Subscriber){
+    #[allow(dead_code)]
+    pub fn unsubscribe(& mut self, _event_type: Event, _listener: Subscriber){
         // match self.events.get_mut(&event_type) {
         //     Some(_event) => {
         //         _event.retain(|&x| !std::ptr::fn_addr_eq(x, listener));

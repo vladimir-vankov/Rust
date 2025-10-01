@@ -5,6 +5,7 @@ use super::utils::EventType;
 pub trait Clickable {
     fn on_touch(& mut self, touch_point: & Point) -> bool;
     
+    #[allow(dead_code)]
     fn on_un_touch(& mut self, touch_point: & Point) -> bool{
         println!("UnTouch ({}, {})", touch_point.x, touch_point.y);
         true

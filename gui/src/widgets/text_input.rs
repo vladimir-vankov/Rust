@@ -31,7 +31,7 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
             text : text.to_string(),
             color : color,
             is_hovered : false,
-            color_hover: Color::RGB(173, 235, 179),
+            color_hover: Color::RGB(39, 73, 114),
             btn_rect : btn_rect,
             text_texture : None,
             text_rect : None,
@@ -48,10 +48,11 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
                                             self.btn_rect.y + Self::BORDER_HEIGHT as i32,
                                             self.btn_rect.width() - (Self::BORDER_HEIGHT * 2) as u32, 
                                             self.btn_rect.height() - (Self::BORDER_HEIGHT * 2) as u32);
+        //TODO bellow color is border color should be set to variable, may be constant
         canvas.set_draw_color(Color::RGB(72, 72, 72));
         let _ = canvas.fill_rect(self.btn_rect);
 
-        if !self.is_hovered{
+        if !self.is_hovered {
             canvas.set_draw_color(self.color);
         }
         else{
@@ -81,6 +82,7 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn events(&mut self) -> &mut Publisher{
         &mut self.publisher
     }
@@ -89,9 +91,15 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
         self.publisher.notify(Event::Click);
     }
 
+    #[allow(dead_code)]
     pub fn get_text_size(self) -> Result<(u32, u32), String>{
         let surface = self.font.render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;    
         Ok(surface.size())
+    }
+
+    fn on_text_input_touch(&mut self) {
+        println!("on_text_input_touch");
+        self.text = "".to_string();
     }
     //TODO create handle_event function to combine on_touch -n_hover 
 }
@@ -103,6 +111,7 @@ impl<'a, 'b, 'c> Clickable for TextInput<'a, 'b, 'c> {
             touch_point.y > self.btn_rect.y &&
             touch_point.y < self.btn_rect.y + self.btn_rect.h{
                 self.notify();
+                self.on_text_input_touch();
                 return true;
             }
             return false

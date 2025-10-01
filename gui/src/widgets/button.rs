@@ -37,7 +37,7 @@ impl<'a, 'b, 'c> Button<'a, 'b, 'c> {
             x : x,
             y : y,
             is_hovered : false,
-            color_hover: Color::RGB(173, 235, 179),
+            color_hover: Color::RGB(59, 123, 203),
             btn_rect : Rect::new(x, y, width as u32, height as u32),
             text_texture : None,
             text_rect : None,
@@ -46,8 +46,7 @@ impl<'a, 'b, 'c> Button<'a, 'b, 'c> {
         };
 
         let _ = button.prepare_text( texture_creator );
-        Ok(button)
-        
+        Ok(button)        
     }
 
     pub fn draw(& self, canvas: &mut Canvas<Window>) -> Result<(), String>{
@@ -89,6 +88,7 @@ impl<'a, 'b, 'c> Button<'a, 'b, 'c> {
         self.publisher.notify(Event::Click);
     }
 
+    #[allow(dead_code)]
     pub fn get_text_size(self) -> Result<(u32, u32), String>{
         let surface = self.font.render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;    
         Ok(surface.size())
