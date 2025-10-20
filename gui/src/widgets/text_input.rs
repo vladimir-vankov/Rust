@@ -67,10 +67,13 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
         Ok(())
     }
 
-    fn prepare_text(&mut self, texture_creator : &'a TextureCreator<WindowContext>,)-> Result<(), String>{
+    fn prepare_text(&mut self, texture_creator : &'a TextureCreator<WindowContext>)-> Result<(), String>{
         let surface = self.font.render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;
         let texture = texture_creator.create_texture_from_surface(&surface).map_err(|e| e.to_string());
-        let (w, h) = surface.size();
+        let (mut w, h) = surface.size();
+        if w > self.btn_rect.width() - Self::PADDING as u32{
+            w = self.btn_rect.width() - 2*Self::PADDING as u32;
+        }
         let rect = Rect::new(
             self.btn_rect.x + Self::BORDER_HEIGHT as i32 + Self::PADDING as i32,
             self.btn_rect.y + (self.btn_rect.h - h as i32) / 2,

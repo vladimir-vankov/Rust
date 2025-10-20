@@ -19,6 +19,7 @@ use widgets::utils::EventType;
 
 mod managers;
 use managers::font_manager::FontManger;
+use managers::gui_factory::GuiFactory;
 
 use crate::widgets::observer;
 
@@ -56,25 +57,38 @@ pub fn main() -> Result<(), String> {
     let running_clone: Rc<RefCell<bool>> = running.clone();
 
     let mut event_pump = sdl_context.event_pump()?;
-    let mut first_button = Button::new("Enter", 
+
+    let mut main_factory = GuiFactory::new();
+    main_factory.create_button("Enter", 
                                                                     sdl2::pixels::Color::RGB(41, 74, 122), 
                                                                     300, 100, 200, 100,
                                                                 font_manager.get_font(24).unwrap(),
-                                                            &texture_creator)?; 
-    let mut second_button = Button::new("Quit", 
+                                                            &texture_creator);
+    main_factory.create_button("Quit", 
                                                                     sdl2::pixels::Color::RGB(41, 74, 122),
                                                                     300, 100, 200, 250,
                                                                 font_manager.get_font(24).unwrap(),
-                                                                &texture_creator)?;
-    let mut text_input = TextInput::new("Please Enter text ...", 
-                                                                    sdl2::pixels::Color::RGB(34, 51, 75),
-                                                                    Rect::new(200, 400, 400, 50),
-                                                                font_manager.get_font(16).unwrap(),
-                                                                &texture_creator)?; 
-    second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
-            *running_clone.borrow_mut() = false;
-        }))
-    );
+                                                                &texture_creator);
+
+    // let mut first_button = Button::new("Enter", 
+    //                                                                 sdl2::pixels::Color::RGB(41, 74, 122), 
+    //                                                                 300, 100, 200, 100,
+    //                                                             font_manager.get_font(24).unwrap(),
+    //                                                         &texture_creator)?; 
+    // let mut second_button = Button::new("Quit", 
+    //                                                                 sdl2::pixels::Color::RGB(41, 74, 122),
+    //                                                                 300, 100, 200, 250,
+    //                                                             font_manager.get_font(24).unwrap(),
+    //                                                             &texture_creator)?;
+    // let mut text_input = TextInput::new("Please Enter text ...", 
+    //                                                                 sdl2::pixels::Color::RGB(34, 51, 75),
+    //                                                                 Rect::new(200, 400, 400, 50),
+    //                                                             font_manager.get_font(16).unwrap(),
+    //                                                             &texture_creator)?; 
+    // second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
+    //         *running_clone.borrow_mut() = false;
+    //     }))
+    // );
     let mut events_queue : VecDeque<CustomEvent> = VecDeque::new();
     'running: loop {
         if !*running.borrow() {
@@ -85,6 +99,10 @@ pub fn main() -> Result<(), String> {
                 Event::Quit { .. }
                 | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running;
+                }
+                Event::TextInput { text, .. } => {
+                        println!("Text input: {}", text);
+                        events_queue.push_back(CustomEvent { event_type: EventType::Hover, point: Point::new(0, 0) });
                 }
                 Event::MouseButtonDown { mouse_btn, x, y, .. } => {
                     match mouse_btn {
@@ -111,13 +129,15 @@ pub fn main() -> Result<(), String> {
         
         canvas.clear();
         
-        let _ = first_button.draw(&mut canvas);
-        let _ = second_button.draw(&mut canvas);
-        let _ = text_input.draw(&mut canvas);
+        main_factory.draw(&mut canvas);
+        // let _ = first_button.draw(&mut canvas);
+        // let _ = second_button.draw(&mut canvas);
+        // let _ = text_input.draw(&mut canvas);
         while let Some(custom_event) = events_queue.pop_front(){
-            first_button.handle_event(&custom_event);
-            second_button.handle_event(&custom_event);
-            text_input.handle_event(&custom_event);
+            main_factory.handle_event(&custom_event);
+            // first_button.handle_event(&custom_event);
+            // second_button.handle_event(&custom_event);
+            // text_input.handle_event(&custom_event);
         }
         
         canvas.present();

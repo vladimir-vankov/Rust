@@ -5,7 +5,8 @@ use sdl2::ttf::Font;
 pub enum EventType{
     Touch,
     UnTouch,
-    Hover
+    Hover,
+    TextInput
 }
 
 pub struct CustomEvent{
