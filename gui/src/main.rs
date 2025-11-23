@@ -39,8 +39,7 @@ pub fn main() -> Result<(), String> {
         }
     };
 
-    let ttf_context = sdl2::ttf::init().unwrap();
-    let font_manager = FontManger::new(&ttf_context)?;
+    let font_manager = FontManger::new()?;
 
     let window = video_subsystem
     .window("Test Window", (GRID_X_SIZE * DOT_SIZE_IN_PXS) as u32, (GRID_Y_SIZE * DOT_SIZE_IN_PXS) as u32)
@@ -51,7 +50,7 @@ pub fn main() -> Result<(), String> {
     .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
-    let texture_creator = canvas.texture_creator();
+    let texture_creator = Rc::new(canvas.texture_creator());
 
     let running = Rc::new(RefCell::new(true));
     let running_clone: Rc<RefCell<bool>> = running.clone();
@@ -63,32 +62,25 @@ pub fn main() -> Result<(), String> {
                                                                     sdl2::pixels::Color::RGB(41, 74, 122), 
                                                                     300, 100, 200, 100,
                                                                 font_manager.get_font(24).unwrap(),
-                                                            &texture_creator);
+                                                                &texture_creator);
     main_factory.create_button("Quit", 
                                                                     sdl2::pixels::Color::RGB(41, 74, 122),
                                                                     300, 100, 200, 250,
                                                                 font_manager.get_font(24).unwrap(),
                                                                 &texture_creator);
-
-    // let mut first_button = Button::new("Enter", 
-    //                                                                 sdl2::pixels::Color::RGB(41, 74, 122), 
-    //                                                                 300, 100, 200, 100,
-    //                                                             font_manager.get_font(24).unwrap(),
-    //                                                         &texture_creator)?; 
-    // let mut second_button = Button::new("Quit", 
-    //                                                                 sdl2::pixels::Color::RGB(41, 74, 122),
-    //                                                                 300, 100, 200, 250,
-    //                                                             font_manager.get_font(24).unwrap(),
-    //                                                             &texture_creator)?;
-    // let mut text_input = TextInput::new("Please Enter text ...", 
-    //                                                                 sdl2::pixels::Color::RGB(34, 51, 75),
-    //                                                                 Rect::new(200, 400, 400, 50),
-    //                                                             font_manager.get_font(16).unwrap(),
-    //                                                             &texture_creator)?; 
-    // second_button.events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
-    //         *running_clone.borrow_mut() = false;
-    //     }))
-    // );
+    main_factory.create_text_input("Please Enter text ...", 
+                                                                    sdl2::pixels::Color::RGB(34, 51, 75),
+                                                                    Rect::new(200, 400, 400, 50),
+                                                                font_manager.get_font(16).unwrap(),
+                                                                &texture_creator);
+    
+    if let Some(quit_btn) = main_factory.get_button("Quit".to_string()){
+        let quit_clone: Rc<RefCell<Button>> = quit_btn.clone();
+        quit_clone.borrow_mut().events().subscribe(observer::Event::Click, Rc::new(RefCell::new(move || {
+                *running_clone.borrow_mut() = false;
+            }))
+        );
+    }
     let mut events_queue : VecDeque<CustomEvent> = VecDeque::new();
     'running: loop {
         if !*running.borrow() {
@@ -130,14 +122,8 @@ pub fn main() -> Result<(), String> {
         canvas.clear();
         
         main_factory.draw(&mut canvas);
-        // let _ = first_button.draw(&mut canvas);
-        // let _ = second_button.draw(&mut canvas);
-        // let _ = text_input.draw(&mut canvas);
         while let Some(custom_event) = events_queue.pop_front(){
             main_factory.handle_event(&custom_event);
-            // first_button.handle_event(&custom_event);
-            // second_button.handle_event(&custom_event);
-            // text_input.handle_event(&custom_event);
         }
         
         canvas.present();

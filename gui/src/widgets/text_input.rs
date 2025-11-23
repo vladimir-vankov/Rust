@@ -6,9 +6,11 @@ use sdl2::ttf::Font;
 use sdl2::video::{Window, WindowContext};
 use super::clickable::Clickable;
 use super::observer::{Event, Publisher};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 // #[derive(Default)]
-pub struct TextInput<'a, 'b, 'c>{
+pub struct TextInput<'a>{
     text: String,
     color: sdl2::pixels::Color,
     is_hovered : bool,
@@ -17,16 +19,16 @@ pub struct TextInput<'a, 'b, 'c>{
     text_texture : Option<Texture<'a>>,
     text_rect : Option<Rect>,
     publisher: Publisher,
-    font : &'a Font<'b, 'c>
+    font : Rc<RefCell<Font<'static, 'static>>>
 }
 
 
-impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
+impl<'a> TextInput<'a> {
     pub const BORDER_HEIGHT:u8 = 1;
     pub const PADDING:u8 = 5;
 
     pub fn new(text: &str, color: sdl2::pixels::Color, btn_rect: Rect, 
-        font : &'a Font<'b, 'c>, texture_creator : &'a TextureCreator<WindowContext>) -> Result<Self, String>{
+        font : Rc<RefCell<Font<'static, 'static>>>, texture_creator : &'a TextureCreator<WindowContext>) -> Result<Self, String>{
         let mut text_field = Self {
             text : text.to_string(),
             color : color,
@@ -68,7 +70,7 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
     }
 
     fn prepare_text(&mut self, texture_creator : &'a TextureCreator<WindowContext>)-> Result<(), String>{
-        let surface = self.font.render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;
+        let surface = self.font.borrow().render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;
         let texture = texture_creator.create_texture_from_surface(&surface).map_err(|e| e.to_string());
         let (mut w, h) = surface.size();
         if w > self.btn_rect.width() - Self::PADDING as u32{
@@ -96,7 +98,7 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
 
     #[allow(dead_code)]
     pub fn get_text_size(self) -> Result<(u32, u32), String>{
-        let surface = self.font.render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;    
+        let surface = self.font.borrow().render(self.text.as_str()).blended(Color::RGB(255, 255, 255)).map_err(|e| e.to_string())?;    
         Ok(surface.size())
     }
 
@@ -107,7 +109,7 @@ impl<'a, 'b, 'c> TextInput<'a, 'b, 'c> {
     //TODO create handle_event function to combine on_touch -n_hover 
 }
 
-impl<'a, 'b, 'c> Clickable for TextInput<'a, 'b, 'c> {
+impl<'a> Clickable for TextInput<'a> {
     fn on_touch(& mut self, touch_point: & Point) -> bool{
         if touch_point.x > self.btn_rect.x && 
             touch_point.x < self.btn_rect.x + self.btn_rect.w && 
