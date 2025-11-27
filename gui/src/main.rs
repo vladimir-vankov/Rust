@@ -93,13 +93,15 @@ pub fn main() -> Result<(), String> {
                     break 'running;
                 }
                 Event::TextInput { text, .. } => {
+                    if text != ""{
                         println!("Text input: {}", text);
-                        events_queue.push_back(CustomEvent { event_type: EventType::Hover, point: Point::new(0, 0) });
+                        events_queue.push_back(CustomEvent { event_type: EventType::TextInput, point: Point::new(0, 0), text : text});
+                    }
                 }
                 Event::MouseButtonDown { mouse_btn, x, y, .. } => {
                     match mouse_btn {
                         MouseButton::Left => {
-                            events_queue.push_back(CustomEvent { event_type: EventType::Touch, point: Point::new(x, y) });
+                            events_queue.push_back(CustomEvent { event_type: EventType::Touch, point: Point::new(x, y), text : "".to_string() });
                         },
                         MouseButton::Right => println!("right click ({}, {})", x, y),
                         MouseButton::Middle => println!("middle click ({}, {})", x, y),
@@ -108,14 +110,14 @@ pub fn main() -> Result<(), String> {
                 }
                 Event::MouseButtonUp { mouse_btn, x, y, .. } => {
                     println!("Released {:?} : ({}, {})", mouse_btn, x, y);
-                    events_queue.push_back(CustomEvent { event_type: EventType::UnTouch, point: Point::new(x, y) });
+                    events_queue.push_back(CustomEvent { event_type: EventType::UnTouch, point: Point::new(x, y), text : "".to_string() });
                 }
                 _ => {}
             }
         }
         
         let mouse_state = event_pump.mouse_state();
-        events_queue.push_back(CustomEvent { event_type: EventType::Hover, point: Point::new(mouse_state.x(), mouse_state.y()) });
+        events_queue.push_back(CustomEvent { event_type: EventType::Hover, point: Point::new(mouse_state.x(), mouse_state.y()), text : "".to_string() });
         
         canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
         

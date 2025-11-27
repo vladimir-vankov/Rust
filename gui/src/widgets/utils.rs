@@ -11,7 +11,8 @@ pub enum EventType{
 
 pub struct CustomEvent{
     pub event_type: EventType,
-    pub point : Point
+    pub point : Point,
+    pub text : String,
 }
 
 #[allow(dead_code)]

@@ -8,6 +8,9 @@ use super::clickable::Clickable;
 use super::observer::{Event, Publisher};
 use std::rc::Rc;
 use std::cell::RefCell;
+use super::utils::EventType;
+use super::utils::CustomEvent;
+
 
 // #[derive(Default)]
 pub struct TextInput<'a>{
@@ -106,6 +109,11 @@ impl<'a> TextInput<'a> {
         println!("on_text_input_touch");
         self.text = "".to_string();
     }
+
+
+    fn on_text_input(&mut self, text : String){
+        println!("received text {0}", text);
+    }
     //TODO create handle_event function to combine on_touch -n_hover 
 }
 
@@ -132,5 +140,20 @@ impl<'a> Clickable for TextInput<'a> {
             }
             self.is_hovered = false;
             return false
+    }
+
+    fn handle_event(& mut self, custom_event: &CustomEvent){
+        match custom_event.event_type {
+            EventType::Touch => {
+                _ = self.on_touch(&custom_event.point)
+            },
+            EventType::Hover => {
+                _ = self.on_hover(&custom_event.point)
+            },
+            EventType::TextInput => {
+                _ = self.on_text_input(custom_event.text.clone());
+            }
+            _ => {}
+        }
     }
 }
